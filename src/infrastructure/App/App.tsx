@@ -1,80 +1,21 @@
-import { useEffect, useState, useRef } from "react"
-import socket from "domains/Socket/connexion"
-import { Message } from "domains/Message/interfaces"
-import { sendMessage } from "domains/Message/useCases"
+import { MessageProvider } from "infrastructure/Contexts/MessageContext";
+import MessageFeed from "infrastructure/MessageFeed/MessageFeed"
+import TextArea from 'infrastructure/TextArea/TextArea'
 
 const App = () => {
-  const [messages, setMessages] = useState<Message[]>([])
-  const [message, setMessage] = useState<string|null>(null)
-  const box = useRef<any>(null);
-
-  const addNewMessage = (message: Message) =>
-    setMessages((messages) => [...messages, message])
-
-  useEffect(() => {
-    if (!box || !box.current) return
-    /*
-    box.current.lastElementChild.scrollIntoView({
-      block: "end",
-      inline: "nearest",
-      behavior: "smooth"
-    });
-    */
-  }, [messages])
-
-  useEffect(() => {
-  
-    socket.on("new-message", (message) => {
-      addNewMessage(message)
-    })
-
-    return () => {
-      socket.close();
-    };
-  }, []);
-
-  const handleChange = ({ target }: React.ChangeEvent<HTMLInputElement>) => {
-    const value = target.value;
-    setMessage(value);
-  };
-
-  const handleMessageSend = () => {
-    if(null !== message) {
-      sendMessage({
-        type: "text",
-        text: message,
-        user: {
-          username: "Toto",
-          color: "#ff0000"
-        }
-      })
-    }
-  };
-
   return (
-    <div>
-      <div
-        style={{
-          height: "100px",
-          overflow: "scroll"
-        }}
-        ref={box}
-      >
-        {messages.map(({ user, text }, i) => {
-          return (
-            <div key={i}>
-              <span style={{ color: `${user.color}` }}>{user.username}</span>:{" "}
-              {text}
-            </div>
-          );
-        })}
+    <MessageProvider>
+      <div className="grid place-items-end bg-stone-900">
+        <div className='flex flex-col border-l border-stone-700 h-screen bg-stone-800 max-w-md'>
+          <MessageFeed/>
+          <div className="px-4 py-2">
+            <TextArea/>
+          </div>
+        </div>
       </div>
-      <div>
-        <input type="text" onChange={handleChange} />{" "}
-        <button onClick={handleMessageSend}>Envoyer</button>
-      </div>
-    </div>
+    </MessageProvider>
   );
 };
 
 export default App;
+
