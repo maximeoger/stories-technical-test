@@ -6,17 +6,31 @@ import { sendMessage } from 'domains/Message/useCases'
 
 interface MessageContext {
   messages: Message[]
-  sendNewMessage: (value: string) => void
+  pendingMessageCount: number,
+  sendNewMessage: (value: string) => void,
+  messageFlowIsPaused: boolean,
+  pauseMessageFlow: () => void,
+  resumeMessageFlow: () => void
 }
 
 export const MessageContext = createContext<MessageContext>({
   messages: [],
-  sendNewMessage: () => {}
+  pendingMessageCount: 0,
+  sendNewMessage: () => {},
+  messageFlowIsPaused: false,
+  pauseMessageFlow: () => {},
+  resumeMessageFlow: () => {}
 })
 
 function useMessageStateProvider() {
   const [messages, setMessages] = useState<Message[]>([])
   const [socket, setSocket] = useState<Socket|null>(null)
+  const [messageFlowIsPaused, setMessageFlowIsPaused] = useState<boolean>(false)
+  const [pendingMessageCount, setPendingMessageCount] = useState<number>(0)
+
+  const pauseMessageFlow = () => setMessageFlowIsPaused(true)
+  const resumeMessageFlow = () => setMessageFlowIsPaused(false)
+  const refreshPendingMessageCount = () => setPendingMessageCount(0)
 
   const addNewMessage = (message: Message) =>
   setMessages((messages) => [...messages, message])
@@ -34,6 +48,12 @@ function useMessageStateProvider() {
   }
 
   useEffect(() => {
+    if(messageFlowIsPaused == false) {
+      refreshPendingMessageCount()
+    }
+  }, [messageFlowIsPaused])
+
+  useEffect(() => {
     const _socket = connectSocket()
 
     _socket.on("new-message", (message) => {
@@ -47,10 +67,19 @@ function useMessageStateProvider() {
     }
   }, [])
 
+  useEffect(() => {
+    if(messageFlowIsPaused) {
+      setPendingMessageCount(prevCount => prevCount + 1)
+    }
+  }, [messages])
 
   return {
     messages,
-    sendNewMessage
+    sendNewMessage,
+    messageFlowIsPaused,
+    pauseMessageFlow,
+    resumeMessageFlow,
+    pendingMessageCount
   }
 }
 
