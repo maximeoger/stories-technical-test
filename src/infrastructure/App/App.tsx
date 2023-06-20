@@ -6,7 +6,7 @@ const App = () => {
   return (
     <MessageProvider>
       <div className="grid place-items-end bg-stone-900">
-        <div className='flex flex-col border-l border-stone-700 h-screen bg-stone-800 max-w-md'>
+        <div className='flex flex-col border-l border-stone-700 max-w-md h-screen'>
           <MessageFeed/>
           <div className="px-4 py-2">
             <TextArea/>

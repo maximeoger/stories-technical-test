@@ -26,7 +26,7 @@ const TextArea = () => {
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setValue(e.target.value)
   }
-
+  
   return (
     // Todo: handle thicker border size with box-shadow when the textarea is focused
     <textarea 
